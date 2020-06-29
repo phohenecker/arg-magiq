@@ -149,8 +149,8 @@ class ConfigSpec(object):
 
             # check if the option is required
             required = (
-                default_value is None and
-                not (argmagiq.OPTIONAL_KEY in field.fget.__dict__)
+                    default_value is None and
+                    not (argmagiq.OPTIONAL_KEY in field.fget.__dict__)
             )
 
             # fetch docstring as description of the config
