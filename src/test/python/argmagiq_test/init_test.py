@@ -31,15 +31,10 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
-"""A Python library for parsing command-line args automagically."""
-
-
-import inspect
 import typing
+import unittest
 
-from argmagiq.decorators import *
-from argmagiq.magiq_parser import MagiqParser
-from argmagiq.parsers.data_type_parser import DataTypeParser
+import argmagiq
 
 
 __author__ = "Patrick Hohenecker"
@@ -52,58 +47,55 @@ __email__ = "patrick.hohenecker@gmx.at"
 __status__ = "Development"
 
 
-DEFAULT_PREFIX = "DEFAULT_"
-"""str: A prefix that identifies class variables as default values."""
+class InitTest(unittest.TestCase):
 
-TEXT_WIDTH = 80
-"""int: The maximum text width used for printing the help text."""
+    #  TEST: extract_config  ###########################################################################################
 
+    def test_extract_config_raises_a_type_error_if_none_is_provided(self):
 
-def extract_config(conf: typing.Any) -> typing.Dict[str, typing.Any]:
-    """Creates a ``dict`` that summarizes the values stored in a configuration object.
+        with self.assertRaises(TypeError):
+            argmagiq.extract_config(None)
 
-    As usual, this function considers all public mutable properties.
+    def test_extract_config_extracts_the_expected_values(self):
 
-    Args:
-        conf: The object that contains the configuration to extract.
+        class _Config(object):
 
-    Returns:
-        dict: Maps the names of the considered members to their according values.
-    """
+            DEFAULT_CONF_1 = 123
 
-    if conf is None:
-        raise TypeError("<conf> must not be None!")
+            def __init__(self):
+                self._conf_1 = self.DEFAULT_CONF_1
+                self._conf_2 = None
+                self._conf_3 = None
 
-    str_conf = {}  # -> used to store the extracted configuration
+            @property
+            def conf_1(self) -> int:
+                return self._conf_1
 
-    # find all public mutable properties -> these are considered as config values
-    for name, field in inspect.getmembers(type(conf), lambda f: isinstance(f, property)):
+            @conf_1.setter
+            def conf_1(self, conf_1: int) -> None:
+                self._conf_1 = conf_1
 
-        # only consider public properties that have an according setter method
-        if not name.startswith("_") and field.fset is not None:
-            str_conf[name] = getattr(conf, name)
+            @property
+            def conf_2(self) -> str:
+                return self._conf_2
 
-    return str_conf
+            @conf_2.setter
+            def conf_2(self, conf_2: str) -> None:
+                self._conf_2 = conf_2
 
+            @argmagiq.optional
+            @property
+            def conf_3(self) -> typing.Optional[str]:
+                return self._conf_3
 
-def parse_args(
-        conf_class: type,
-        app_name: str = None,
-        app_description: str = None
-):
-    """Parses the args of the current application based on the provided configuration class, and returns an instance of
-    the same that is populated accordingly.
+            @conf_3.setter
+            def conf_3(self, conf_3: str) -> None:
+                self._conf_3 = conf_3
 
-    Args:
-        conf_class (type): The configuration class that specifies the command line args to parse.
-        app_name (str): The name of the application that is printed in the synopsis.
-        app_description (str): The description of the application that is printed in the synopsis.
+        conf = _Config()
+        conf.conf_2 = "abc"
 
-    Returns:
-        The parsed configuration as an object of type ``conf_class``.
-    """
-    return MagiqParser(
-            conf_class,
-            app_name=app_name,
-            app_description=app_description
-    ).parse_args()
+        self.assertEqual(
+                {"conf_1": 123, "conf_2": "abc", "conf_3": None},
+                argmagiq.extract_config(conf)
+        )
