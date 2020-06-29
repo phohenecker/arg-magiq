@@ -31,6 +31,13 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+import typing
+import unittest
+
+import argmagiq.parsers.data_type_parser as data_type_parser
+import argmagiq.value_spec as value_spec
+
+
 __author__ = "Patrick Hohenecker"
 __copyright__ = "Copyright (c) 2020, Patrick Hohenecker"
 __license__ = "BSD-2-Clause"
@@ -39,3 +46,50 @@ __date__ = "29 Jun 2020"
 __maintainer__ = "Patrick Hohenecker"
 __email__ = "patrick.hohenecker@gmx.at"
 __status__ = "Development"
+
+
+class DataTypeParserTest(unittest.TestCase):
+
+    #  TEST: fires  ####################################################################################################
+
+    def test_fires_yields_the_expected_values(self):
+
+        parser = _DummyParser(value_spec.ValueSpec("some_config", "Just a test", str, True, None))
+
+        self.assertTrue(parser.fires(("--some-config",)))
+        self.assertTrue(parser.fires(("--some-config", "value")))
+        self.assertFalse(parser.fires(("--smth-else-first", "--some-config", "value")))
+        self.assertFalse(parser.fires(("smth different entirely",)))
+
+    #  TEST: parse  ####################################################################################################
+
+    def test_parse_raises_a_value_error_if_the_parser_does_not_fire(self):
+
+        parser = _DummyParser(value_spec.ValueSpec("some_config", "Just a test", str, True, None))
+
+        with self.assertRaises(ValueError):
+            parser.parse(("--smth-else-first", "--some-config", "value"))
+        with self.assertRaises(ValueError):
+            parser.parse(("smth different entirely",))
+
+    #  TEST: parse_json  ###############################################################################################
+
+    def test_parse_json_raises_a_type_error_if_the_provided_value_does_not_comply_with_the_spec(self):
+
+        parser = _DummyParser(value_spec.ValueSpec("some_config", "Just a test", str, True, None))
+
+        with self.assertRaises(TypeError):
+            parser.parse_json(123)
+
+    def test_parse_json_returns_the_provided_value_if_its_of_the_correct_type(self):
+
+        parser = _DummyParser(value_spec.ValueSpec("some_config", "Just a test", str, True, None))
+
+        self.assertEqual("works", parser.parse_json("works"))
+
+
+class _DummyParser(data_type_parser.DataTypeParser):
+
+    def _parse(self, argv: typing.Tuple[str, ...]) -> typing.Tuple[typing.Any, typing.Tuple[str, ...]]:
+
+        return "nothing", argv

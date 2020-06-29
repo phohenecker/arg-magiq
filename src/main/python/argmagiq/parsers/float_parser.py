@@ -31,6 +31,11 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+import typing
+
+import argmagiq.parsers.data_type_parser as data_type_parser
+
+
 __author__ = "Patrick Hohenecker"
 __copyright__ = "Copyright (c) 2020, Patrick Hohenecker"
 __license__ = "BSD-2-Clause"
@@ -39,3 +44,24 @@ __date__ = "29 Jun 2020"
 __maintainer__ = "Patrick Hohenecker"
 __email__ = "patrick.hohenecker@gmx.at"
 __status__ = "Development"
+
+
+class FloatParser(data_type_parser.DataTypeParser):
+    """A parser for configuration values of type ``float``."""
+
+    def _parse(self, argv: typing.Tuple[str, ...]) -> typing.Tuple[typing.Any, typing.Tuple[str, ...]]:
+
+        if len(argv) < 2:
+            raise ValueError(f"Argument {self._arg_name} requires an argument")
+
+        try:
+            return float(argv[1]), argv[2:]
+        except ValueError:
+            raise ValueError(f"Argument {self._arg_name} received an illegal value: {argv[1]}")
+
+    def parse_json(self, json_value: typing.Any) -> typing.Any:
+
+        if not isinstance(json_value, int) and not isinstance(json_value, float):
+            raise ValueError(f"Invalid JSON value for configuration {self._spec.name}: {json_value}")
+
+        return float(json_value)

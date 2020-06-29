@@ -31,6 +31,12 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+import unittest
+
+import argmagiq.parsers.str_parser as str_parser
+import argmagiq.value_spec as value_spec
+
+
 __author__ = "Patrick Hohenecker"
 __copyright__ = "Copyright (c) 2020, Patrick Hohenecker"
 __license__ = "BSD-2-Clause"
@@ -39,3 +45,32 @@ __date__ = "29 Jun 2020"
 __maintainer__ = "Patrick Hohenecker"
 __email__ = "patrick.hohenecker@gmx.at"
 __status__ = "Development"
+
+
+class StrParserTest(unittest.TestCase):
+
+    #  TEST: _parse  ###################################################################################################
+
+    def test_parse_extracts_provided_args_as_expected(self):
+
+        parser = str_parser.StrParser(value_spec.ValueSpec("some_config", "Just a test", str, True, None))
+
+        self.assertEqual(
+                ("value", ("--another-config", "another value")),
+                parser._parse(("--some-config", "value", "--another-config", "another value"))
+        )
+        self.assertEqual(
+                ("value", tuple()),
+                parser._parse(("--some-config", "value"))
+        )
+
+    def test_parse_raises_a_value_error_if_an_expected_value_is_missing(self):
+
+        parser = str_parser.StrParser(value_spec.ValueSpec("some_config", "Just a test", str, True, None))
+
+        with self.assertRaises(ValueError):
+
+            self.assertEqual(
+                    ("value", tuple()),
+                    parser._parse(("--some-config",))
+            )

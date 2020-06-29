@@ -31,6 +31,12 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+import typing
+
+import argmagiq.parsers.data_type_parser as data_type_parser
+import argmagiq.value_spec as value_spec
+
+
 __author__ = "Patrick Hohenecker"
 __copyright__ = "Copyright (c) 2020, Patrick Hohenecker"
 __license__ = "BSD-2-Clause"
@@ -39,3 +45,32 @@ __date__ = "29 Jun 2020"
 __maintainer__ = "Patrick Hohenecker"
 __email__ = "patrick.hohenecker@gmx.at"
 __status__ = "Development"
+
+
+class BoolParser(data_type_parser.DataTypeParser):
+    """A parser for configuration values of type ``bool``."""
+
+    def __init__(self, spec: value_spec.ValueSpec):
+        """Creates a new ``BoolParser`` for the provided :class:`value_spec.ValueSpec`.
+
+        Args:
+            spec (:class:`value_spec.ValueSpec`): The specification of the value to parse.
+        """
+
+        super().__init__(spec)
+
+        if self._spec.default_value:
+            self._arg_name = "--no" + self._arg_name[1:]
+
+    #  PROPERTIES  #####################################################################################################
+
+    @property
+    def synopsis(self) -> typing.Tuple[str, str]:
+
+        return self._arg_name, self._spec.description
+
+    #  METHODS  ########################################################################################################
+
+    def _parse(self, argv: typing.Tuple[str, ...]) -> typing.Tuple[typing.Any, typing.Tuple[str, ...]]:
+
+        return not self._spec.default_value, argv[1:]
