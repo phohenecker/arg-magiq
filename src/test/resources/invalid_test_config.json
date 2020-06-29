@@ -1,0 +1,5 @@
+{
+    "conf_1": true,
+    "conf_2": 666,
+    "this_one_does_not_exist": "error"
+}

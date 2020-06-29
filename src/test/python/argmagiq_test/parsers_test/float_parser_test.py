@@ -31,6 +31,12 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+import unittest
+
+import argmagiq.parsers.float_parser as float_parser
+import argmagiq.value_spec as value_spec
+
+
 __author__ = "Patrick Hohenecker"
 __copyright__ = "Copyright (c) 2020, Patrick Hohenecker"
 __license__ = "BSD-2-Clause"
@@ -39,3 +45,56 @@ __date__ = "29 Jun 2020"
 __maintainer__ = "Patrick Hohenecker"
 __email__ = "patrick.hohenecker@gmx.at"
 __status__ = "Development"
+
+
+class FloatParserTest(unittest.TestCase):
+
+    #  TEST: _parse  ###################################################################################################
+
+    def test_parse_raises_a_value_error_if_an_expected_value_is_missing(self):
+
+        parser = float_parser.FloatParser(value_spec.ValueSpec("some_config", "Just a test", float, True, None))
+        argv = "--some-config",
+
+        self.assertTrue(parser.fires(argv))
+        with self.assertRaises(ValueError):
+            parser._parse(argv)
+
+    def test_parse_raises_a_value_error_if_an_illegal_value_is_provided(self):
+
+        parser = float_parser.FloatParser(value_spec.ValueSpec("some_config", "Just a test", float, True, None))
+        argv = "--some-config", "not-a-number"
+
+        self.assertTrue(parser.fires(argv))
+        with self.assertRaises(ValueError):
+            parser._parse(argv)
+
+    def test_parse_extracts_legal_values_as_expected(self):
+
+        parser = float_parser.FloatParser(value_spec.ValueSpec("some_config", "Just a test", float, True, None))
+
+        value, argv = parser._parse(("--some-config", "666.666", "--another-config", "another value"))
+        self.assertIsInstance(value, float)
+        self.assertEqual((666.666, ("--another-config", "another value")), (value, argv))
+
+        value, argv = parser._parse(("--some-config", "666.666"))
+        self.assertIsInstance(value, float)
+        self.assertEqual((666.666, tuple()), (value, argv))
+
+        value, argv = parser._parse(("--some-config", "666"))
+        self.assertIsInstance(value, float)
+        self.assertEqual((666.0, tuple()), (value, argv))
+
+    #  TEST: parse_json  ###############################################################################################
+
+    def test_parse_json_processes_values_correctly(self):
+
+        parser = float_parser.FloatParser(value_spec.ValueSpec("some_config", "Just a test", float, True, None))
+
+        value = parser.parse_json(666.666)
+        self.assertIsInstance(value, float)
+        self.assertEqual(666.666, value)
+
+        value = parser.parse_json(666)
+        self.assertIsInstance(value, float)
+        self.assertEqual(666.0, value)

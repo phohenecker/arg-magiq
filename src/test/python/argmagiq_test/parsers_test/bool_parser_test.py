@@ -31,6 +31,12 @@
 # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # # #
 
 
+import unittest
+
+import argmagiq.parsers.bool_parser as bool_parser
+import argmagiq.value_spec as value_spec
+
+
 __author__ = "Patrick Hohenecker"
 __copyright__ = "Copyright (c) 2020, Patrick Hohenecker"
 __license__ = "BSD-2-Clause"
@@ -39,3 +45,30 @@ __date__ = "29 Jun 2020"
 __maintainer__ = "Patrick Hohenecker"
 __email__ = "patrick.hohenecker@gmx.at"
 __status__ = "Development"
+
+
+class BoolParserTest(unittest.TestCase):
+
+    #  TEST: _parse  ###################################################################################################
+
+    def test_parse_extracts_provided_args_as_expected(self):
+
+        parser = bool_parser.BoolParser(value_spec.ValueSpec("some_config", "...", str, True, False))
+        self.assertEqual(
+                (True, ("--another-config", "another value")),
+                parser._parse(("--some-config", "--another-config", "another value"))
+        )
+        self.assertEqual(
+                (True, tuple()),
+                parser._parse(("--some-config",))
+        )
+
+        parser = bool_parser.BoolParser(value_spec.ValueSpec("some_config", "...", str, True, True))
+        self.assertEqual(
+                (False, ("--another-config", "another value")),
+                parser._parse(("--no-some-config", "--another-config", "another value"))
+        )
+        self.assertEqual(
+                (False, tuple()),
+                parser._parse(("--no-some-config",))
+        )

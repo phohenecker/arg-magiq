@@ -39,3 +39,24 @@ __date__ = "29 Jun 2020"
 __maintainer__ = "Patrick Hohenecker"
 __email__ = "patrick.hohenecker@gmx.at"
 __status__ = "Development"
+
+
+OPTIONAL_KEY = "argmagiq.optional"
+"""str: The key that is used for storing that an arg is optional."""
+
+
+def optional(func: property) -> property:
+    """This decorator marks a property of a configuration class as optional.
+
+    The use of this decorator is necessary in order to prevent an optional configuration without default value from
+    being interpreted as a required one.
+    """
+
+    # make sure that the annotated function is a property
+    if not isinstance(func, property):
+        raise TypeError("The decorator @optional can be applied to properties only!")
+
+    # mark annotated property as optional
+    func.fget.__dict__[OPTIONAL_KEY] = True
+
+    return func
