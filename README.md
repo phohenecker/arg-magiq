@@ -15,7 +15,7 @@ Installation
 The package `argmagiq` can be installed via pip as follows:
 
 ```bash
-pip install git+https://github.com/phohenecker/arg-magiq
+pip install argmagiq
 ```
 
 

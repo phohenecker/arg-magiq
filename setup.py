@@ -66,6 +66,7 @@ setuptools.setup(
         ],
         license="BSD-2-Clause",
         long_description=long_description,
+        long_description_content_type="text/markdown",
         name="argmagiq",
         package_dir={"": "src/main/python"},
         packages=setuptools.find_packages("src/main/python"),
